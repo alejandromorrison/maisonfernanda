@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-inter bg-ivory text-deep-taupe;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-playfair;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #B9AFA4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6B655F;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-deep-taupe text-ivory px-8 py-3 font-inter text-sm uppercase tracking-wider 
+    transition-all duration-300 hover:bg-gold hover:text-deep-taupe;
+  }
+  
+  .btn-secondary {
+    @apply border border-deep-taupe text-deep-taupe px-8 py-3 font-inter text-sm uppercase 
+    tracking-wider transition-all duration-300 hover:bg-deep-taupe hover:text-ivory;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-warm-taupe bg-white focus:outline-none 
+    focus:border-deep-taupe transition-colors;
+  }
+  
+  .section-padding {
+    @apply px-4 md:px-8 lg:px-16 xl:px-24 2xl:px-32;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto section-padding;
+  }
+  
+  .heading-xl {
+    @apply text-4xl md:text-5xl lg:text-6xl font-playfair font-light tracking-tight;
+  }
+  
+  .heading-lg {
+    @apply text-3xl md:text-4xl lg:text-5xl font-playfair font-light tracking-tight;
+  }
+  
+  .heading-md {
+    @apply text-2xl md:text-3xl font-playfair font-light;
+  }
+  
+  .heading-sm {
+    @apply text-xl md:text-2xl font-playfair font-light;
+  }
+  
+  .text-body {
+    @apply text-base leading-relaxed text-deep-taupe/80;
+  }
+  
+  .link-underline {
+    @apply relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px 
+    after:bg-deep-taupe after:transition-all after:duration-300 hover:after:w-full;
+  }
+}
+
+/* Product grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .product-grid {
+    gap: 3rem;
+  }
+}
+
+/* Image hover effect */
+.product-image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.product-image-wrapper img {
+  transition: transform 0.6s ease;
+}
+
+.product-image-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #6B655F;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
