@@ -614,6 +614,3 @@ Actualmente no ofrecemos opciones de pago a plazos.
   );
 };
 
-export default PageManager;
-
-import { pages } from '@/lib/api';
