@@ -24,7 +24,11 @@ const connectDB = async () => {
     
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    process.exit(1);
+    // Don't exit in serverless environment
+    if (!process.env.VERCEL) {
+      process.exit(1);
+    }
+    throw error; // Re-throw to be caught by caller
   }
 };
 
