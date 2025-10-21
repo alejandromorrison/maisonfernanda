@@ -9,7 +9,7 @@ const API_URL = (() => {
 
   // In production (Vercel environment), use the specific backend deployment
   if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
-    return 'https://maison-fernanda-backend-l961t0rhy-alejandros-projects-ebed6ed9.vercel.app';
+    return 'https://maison-fernanda-backend-nrbo7ovqi-alejandros-projects-ebed6ed9.vercel.app';
   }
 
   // Default for development
