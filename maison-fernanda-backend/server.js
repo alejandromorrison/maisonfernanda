@@ -120,6 +120,25 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend is working!' });
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Maison Fernanda API',
+    version: '1.0.0',
+    endpoints: [
+      '/api/health',
+      '/api/products',
+      '/api/orders',
+      '/api/auth'
+    ]
+  });
+});
+
+// Favicon route
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   try {
