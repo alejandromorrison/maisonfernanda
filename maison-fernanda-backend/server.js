@@ -9,7 +9,10 @@ const connectDB = require('./config/database');
 const app = express();
 
 // Connect to database
-connectDB();
+connectDB().catch(err => {
+  console.error('Database connection failed:', err);
+  process.exit(1);
+});
 
 // Middleware
 app.use(helmet());

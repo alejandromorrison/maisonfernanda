@@ -9,13 +9,18 @@ const connectDB = async () => {
     
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     
-    // Create text index for search
-    const Product = mongoose.model('Product');
-    await Product.collection.createIndex({
-      name: 'text',
-      description: 'text',
-      category: 'text'
-    });
+    // Create text index for search if Product model exists
+    try {
+      const Product = mongoose.model('Product');
+      await Product.collection.createIndex({
+        name: 'text',
+        description: 'text',
+        category: 'text'
+      });
+      console.log('Text index created successfully');
+    } catch (indexError) {
+      console.log('Text index creation skipped:', indexError.message);
+    }
     
   } catch (error) {
     console.error(`Error: ${error.message}`);
