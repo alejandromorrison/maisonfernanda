@@ -375,3 +375,4 @@ const NewsletterManager: React.FC = () => {
   );
 };
 
+export default NewsletterManager;
