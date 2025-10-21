@@ -65,6 +65,28 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Basic API endpoints (minimal responses for now)
+app.get('/api/products', (req, res) => {
+  res.json({ products: [], message: 'Products endpoint working' });
+});
+
+app.get('/api/site-content', (req, res) => {
+  res.json({ 
+    heroTitle: 'Maison Fernanda',
+    heroSubtitle: 'Luxury Fashion',
+    aboutText: 'Welcome to Maison Fernanda',
+    message: 'Site content endpoint working'
+  });
+});
+
+app.get('/api/orders', (req, res) => {
+  res.json({ orders: [], message: 'Orders endpoint working' });
+});
+
+app.get('/api/orders/admin/all', (req, res) => {
+  res.json({ orders: [], message: 'Admin orders endpoint working' });
+});
+
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
