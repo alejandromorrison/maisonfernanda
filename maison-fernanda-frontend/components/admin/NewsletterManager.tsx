@@ -375,6 +375,3 @@ const NewsletterManager: React.FC = () => {
   );
 };
 
-export default NewsletterManager;
-
-import { newsletter } from '@/lib/api';
