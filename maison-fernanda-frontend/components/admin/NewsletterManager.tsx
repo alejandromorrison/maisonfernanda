@@ -3,71 +3,62 @@ import { newsletter } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 const NewsletterManager: React.FC = () => {
-  const [loading, setLoading] = useState(true);
   const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
-  const [pagination, setPagination] = useState<any>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
+  const [totalPages, setTotalPages] = useState(1);
   const [editingSubscriber, setEditingSubscriber] = useState<any>(null);
 
   useEffect(() => {
-    fetchData();
+    fetchSubscribers();
+    fetchStats();
   }, [currentPage, searchTerm, statusFilter]);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchSubscribers = async () => {
     try {
-      const [subscribersRes, statsRes] = await Promise.all([
-        newsletter.getSubscribers({
-          page: currentPage,
-          limit: 20,
-          search: searchTerm || undefined,
-          status: statusFilter || undefined
-        }),
-        newsletter.getStats()
-      ]);
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (searchTerm) params.append('search', searchTerm);
+      if (statusFilter) params.append('status', statusFilter);
+      params.append('page', currentPage.toString());
       
-      setSubscribers(subscribersRes.data.subscribers);
-      setPagination(subscribersRes.data.pagination);
-      setStats(statsRes.data);
+      const response = await newsletter.getSubscribers(params);
+      setSubscribers(response.data.subscribers);
+      setTotalPages(response.data.totalPages);
     } catch (error) {
-      console.error('Error fetching newsletter data:', error);
-      toast.error('Error al cargar datos del newsletter');
+      console.error('Error fetching subscribers:', error);
+      toast.error('Error al cargar suscriptores');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await newsletter.getStats();
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
     }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchData();
+    fetchSubscribers();
   };
 
   const handleStatusChange = async (subscriberId: string, newStatus: string) => {
     try {
       await newsletter.updateSubscriber(subscriberId, { status: newStatus });
-      toast.success('Estado actualizado exitosamente');
-      fetchData();
+      toast.success('Estado actualizado');
+      fetchSubscribers();
     } catch (error) {
+      console.error('Error updating status:', error);
       toast.error('Error al actualizar estado');
-    }
-  };
-
-  const handleDeleteSubscriber = async (subscriberId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este suscriptor?')) {
-      return;
-    }
-
-    try {
-      await newsletter.deleteSubscriber(subscriberId);
-      toast.success('Suscriptor eliminado exitosamente');
-      fetchData();
-    } catch (error) {
-      toast.error('Error al eliminar suscriptor');
     }
   };
 
@@ -78,42 +69,46 @@ const NewsletterManager: React.FC = () => {
         notes: editingSubscriber.notes,
         tags: editingSubscriber.tags
       });
-      toast.success('Suscriptor actualizado exitosamente');
+      toast.success('Suscriptor actualizado');
       setEditingSubscriber(null);
-      fetchData();
+      fetchSubscribers();
     } catch (error) {
+      console.error('Error updating subscriber:', error);
       toast.error('Error al actualizar suscriptor');
     }
   };
 
-  const exportSubscribers = () => {
-    const csvContent = [
-      ['Email', 'Nombre', 'Apellido', 'Estado', 'Fecha de Suscripción', 'Fuente', 'Notas'],
-      ...subscribers.map(sub => [
-        sub.email,
-        sub.firstName || '',
-        sub.lastName || '',
-        sub.status,
-        new Date(sub.subscribedAt).toLocaleDateString('es-ES'),
-        sub.source,
-        sub.notes || ''
-      ])
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `suscriptores-newsletter-${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleDeleteSubscriber = async (subscriberId: string) => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este suscriptor?')) return;
     
-    toast.success('Lista de suscriptores exportada');
+    try {
+      await newsletter.deleteSubscriber(subscriberId);
+      toast.success('Suscriptor eliminado');
+      fetchSubscribers();
+    } catch (error) {
+      console.error('Error deleting subscriber:', error);
+      toast.error('Error al eliminar suscriptor');
+    }
   };
 
-  if (loading && !stats) {
+  const exportSubscribers = async () => {
+    try {
+      const response = await newsletter.exportSubscribers();
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'suscriptores.csv';
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success('Exportación completada');
+    } catch (error) {
+      console.error('Error exporting subscribers:', error);
+      toast.error('Error al exportar suscriptores');
+    }
+  };
+
+  if (loading && !subscribers.length) {
     return (
       <div className="flex justify-center py-12">
         <div className="spinner"></div>
@@ -125,7 +120,6 @@ const NewsletterManager: React.FC = () => {
     <div>
       <h2 className="font-playfair text-2xl mb-6">Gestión de Newsletter</h2>
       
-      {/* Estadísticas */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white p-6 border border-warm-taupe/20">
@@ -151,14 +145,13 @@ const NewsletterManager: React.FC = () => {
         </div>
       )}
 
-      {/* Filtros y Búsqueda */}
       <div className="bg-white p-6 border border-warm-taupe/20 mb-6">
         <form onSubmit={handleSearch} className="flex gap-4 mb-4">
           <input
             type="text"
-            placeholder="Buscar por email, nombre..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar por email o nombre..."
             className="input-field flex-1"
           />
           <select
@@ -172,21 +165,20 @@ const NewsletterManager: React.FC = () => {
             <option value="bounced">Rebotados</option>
           </select>
           <button type="submit" className="btn-primary">
-            🔍 Buscar
+            Buscar
           </button>
         </form>
-        
+
         <div className="flex gap-4">
           <button
             onClick={exportSubscribers}
             className="btn-secondary"
           >
-            📊 Exportar CSV
+            Exportar CSV
           </button>
         </div>
       </div>
 
-      {/* Lista de Suscriptores */}
       <div className="bg-white border border-warm-taupe/20">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -225,9 +217,9 @@ const NewsletterManager: React.FC = () => {
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      {subscriber.firstName || subscriber.lastName ? (
+                      {subscriber.name ? (
                         <div>
-                          {subscriber.firstName} {subscriber.lastName}
+                          <div className="font-medium">{subscriber.name}</div>
                         </div>
                       ) : (
                         <span className="text-deep-taupe/60">-</span>
@@ -237,7 +229,7 @@ const NewsletterManager: React.FC = () => {
                       <select
                         value={subscriber.status}
                         onChange={(e) => handleStatusChange(subscriber._id, e.target.value)}
-                        className={`text-xs px-2 py-1 rounded ${
+                        className={`text-sm px-2 py-1 rounded ${
                           subscriber.status === 'active' ? 'bg-green-100 text-green-800' :
                           subscriber.status === 'unsubscribed' ? 'bg-red-100 text-red-800' :
                           'bg-orange-100 text-orange-800'
@@ -249,10 +241,10 @@ const NewsletterManager: React.FC = () => {
                       </select>
                     </td>
                     <td className="py-3 px-4 text-sm text-deep-taupe/60">
-                      {new Date(subscriber.subscribedAt).toLocaleDateString('es-ES')}
+                      {new Date(subscriber.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4 text-sm text-deep-taupe/60 capitalize">
-                      {subscriber.source}
+                      {subscriber.source || 'Web'}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">
@@ -260,13 +252,13 @@ const NewsletterManager: React.FC = () => {
                           onClick={() => setEditingSubscriber(subscriber)}
                           className="text-sm text-blue-600 hover:text-blue-800"
                         >
-                          ✏️ Editar
+                          Editar
                         </button>
                         <button
                           onClick={() => handleDeleteSubscriber(subscriber._id)}
                           className="text-sm text-red-600 hover:text-red-800"
                         >
-                          🗑️ Eliminar
+                          Eliminar
                         </button>
                       </div>
                     </td>
@@ -277,11 +269,10 @@ const NewsletterManager: React.FC = () => {
           </table>
         </div>
 
-        {/* Paginación */}
-        {pagination.pages > 1 && (
+        {totalPages > 1 && (
           <div className="flex justify-between items-center p-4 border-t border-warm-taupe/20">
             <div className="text-sm text-deep-taupe/60">
-              Mostrando {((pagination.current - 1) * 20) + 1} - {Math.min(pagination.current * 20, pagination.total)} de {pagination.total} suscriptores
+              Página {currentPage} de {totalPages}
             </div>
             <div className="flex gap-2">
               <button
@@ -289,24 +280,23 @@ const NewsletterManager: React.FC = () => {
                 disabled={currentPage === 1}
                 className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ← Anterior
+                Anterior
               </button>
               <span className="px-4 py-2 text-sm">
-                Página {pagination.current} de {pagination.pages}
+                {currentPage} / {totalPages}
               </span>
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === pagination.pages}
+                disabled={currentPage === totalPages}
                 className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Siguiente →
+                Siguiente
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Modal de Edición */}
       {editingSubscriber && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white max-w-md w-full p-6">
@@ -328,11 +318,8 @@ const NewsletterManager: React.FC = () => {
                   <label className="block text-sm font-medium mb-2">Notas</label>
                   <textarea
                     value={editingSubscriber.notes || ''}
-                    onChange={(e) => setEditingSubscriber({
-                      ...editingSubscriber,
-                      notes: e.target.value
-                    })}
-                    className="input-field min-h-[80px]"
+                    onChange={(e) => setEditingSubscriber({ ...editingSubscriber, notes: e.target.value })}
+                    className="input-field min-h-[100px]"
                     placeholder="Notas sobre este suscriptor..."
                   />
                 </div>
@@ -342,8 +329,8 @@ const NewsletterManager: React.FC = () => {
                   <input
                     type="text"
                     value={editingSubscriber.tags?.join(', ') || ''}
-                    onChange={(e) => setEditingSubscriber({
-                      ...editingSubscriber,
+                    onChange={(e) => setEditingSubscriber({ 
+                      ...editingSubscriber, 
                       tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
                     })}
                     className="input-field"
@@ -357,7 +344,7 @@ const NewsletterManager: React.FC = () => {
                   type="submit"
                   className="btn-primary flex-1"
                 >
-                  💾 Guardar
+                  Guardar
                 </button>
                 <button
                   type="button"
