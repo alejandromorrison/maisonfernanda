@@ -94,7 +94,7 @@ const NewsletterManager: React.FC = () => {
   const exportSubscribers = async () => {
     try {
       // For now, just show a message that export is not available
-      toast.info('Función de exportación no disponible aún');
+      toast.success('Función de exportación no disponible aún');
     } catch (error) {
       console.error('Error exporting subscribers:', error);
       toast.error('Error al exportar suscriptores');
