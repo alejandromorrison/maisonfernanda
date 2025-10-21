@@ -4,6 +4,18 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const path = require('path');
+
+// Add error handling for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
 const connectDB = require('./config/database');
 
 const app = express();
@@ -127,6 +139,8 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     console.log(`Error: ${err.message}`);
     server.close(() => process.exit(1));
   });
+} else {
+  console.log('Running in Vercel environment');
 }
 
 module.exports = app;
