@@ -35,8 +35,11 @@ connectDB().catch(err => {
 });
 
 // Middleware
-app.use(helmet());
-app.use(compression());
+// Disable helmet and compression for testing in serverless
+if (!process.env.VERCEL) {
+  app.use(helmet());
+  app.use(compression());
+}
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
