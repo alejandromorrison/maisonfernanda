@@ -2,19 +2,20 @@
   "version": 2,
   "builds": [
     {
-      "src": "server-minimal.js",
+      "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "server-minimal.js"
+      "dest": "server.js"
     }
   ],
   "env": {
     "NODE_ENV": "production"
   }
 }
+
 
 
