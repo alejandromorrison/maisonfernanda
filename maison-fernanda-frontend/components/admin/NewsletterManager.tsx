@@ -93,15 +93,8 @@ const NewsletterManager: React.FC = () => {
 
   const exportSubscribers = async () => {
     try {
-      const response = await newsletter.exportSubscribers();
-      const blob = new Blob([response.data], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'suscriptores.csv';
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast.success('Exportación completada');
+      // For now, just show a message that export is not available
+      toast.info('Función de exportación no disponible aún');
     } catch (error) {
       console.error('Error exporting subscribers:', error);
       toast.error('Error al exportar suscriptores');
