@@ -8,22 +8,30 @@ const path = require('path');
 // Add error handling for uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
-  process.exit(1);
+  // Don't exit in serverless environment
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
 process.on('unhandledRejection', (err) => {
   console.error('Unhandled Rejection:', err);
-  process.exit(1);
+  // Don't exit in serverless environment
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
 const connectDB = require('./config/database');
 
 const app = express();
 
-// Connect to database
+// Connect to database (don't crash if it fails in serverless)
 connectDB().catch(err => {
   console.error('Database connection failed:', err);
-  process.exit(1);
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
 // Middleware
