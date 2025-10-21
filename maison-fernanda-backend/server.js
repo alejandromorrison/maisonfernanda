@@ -88,9 +88,24 @@ app.use('/api/rentals', require('./routes/rentals'));
 app.use('/api/bank-transfers', require('./routes/bankTransfers'));
 app.use('/api/payment-methods', require('./routes/paymentMethods'));
 
+// Simple test route (no database required)
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend is working!' });
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  try {
+    res.json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      vercel: !!process.env.VERCEL
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Error handler
