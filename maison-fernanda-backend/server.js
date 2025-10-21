@@ -97,19 +97,23 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
-app.use('/api/cart', require('./routes/cart'));
-app.use('/api/checkout', require('./routes/checkout'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/site-content', require('./routes/siteContent'));
-app.use('/api/newsletter', require('./routes/newsletter'));
-app.use('/api/pages', require('./routes/pageContent'));
-app.use('/api/images', require('./routes/images'));
-app.use('/api/rentals', require('./routes/rentals'));
-app.use('/api/bank-transfers', require('./routes/bankTransfers'));
-app.use('/api/payment-methods', require('./routes/paymentMethods'));
+// Routes - wrapped in try-catch for serverless
+try {
+  app.use('/api/auth', require('./routes/auth'));
+  app.use('/api/products', require('./routes/products'));
+  app.use('/api/cart', require('./routes/cart'));
+  app.use('/api/checkout', require('./routes/checkout'));
+  app.use('/api/orders', require('./routes/orders'));
+  app.use('/api/site-content', require('./routes/siteContent'));
+  app.use('/api/newsletter', require('./routes/newsletter'));
+  app.use('/api/pages', require('./routes/pageContent'));
+  app.use('/api/images', require('./routes/images'));
+  app.use('/api/rentals', require('./routes/rentals'));
+  app.use('/api/bank-transfers', require('./routes/bankTransfers'));
+  app.use('/api/payment-methods', require('./routes/paymentMethods'));
+} catch (error) {
+  console.error('Error loading routes:', error);
+}
 
 // Simple test route (no database required)
 app.get('/api/test', (req, res) => {
