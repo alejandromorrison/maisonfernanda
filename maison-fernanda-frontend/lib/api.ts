@@ -1,9 +1,26 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Determine API URL based on environment
+const API_URL = (() => {
+  // Check for environment variable first
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // In production (Vercel environment), use the specific backend deployment
+  if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
+    return 'https://maison-fernanda-backend-je9yy3mqf-alejandros-projects-ebed6ed9.vercel.app';
+  }
+
+  // Default for development
+  return 'http://localhost:5000';
+})();
+
+// Ensure API_URL doesn't end with slash to avoid double slashes
+const cleanAPIUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
 
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: `${cleanAPIUrl}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -53,6 +70,37 @@ export const orders = {
   getAllAdmin: () => api.get('/orders/admin/all'),
   updateStatus: (id: string, status: string) => 
     api.put(`/orders/${id}/status`, { status }),
+};
+
+// Site Content API
+export const siteContent = {
+  get: () => api.get('/site-content'),
+  update: (data: any) => api.put('/site-content', data),
+  updateHero: (data: any) => api.put('/site-content/hero', data),
+  updateEditorial: (data: any) => api.put('/site-content/editorial', data),
+  updateCategories: (data: any) => api.put('/site-content/categories', data),
+  updateFooter: (data: any) => api.put('/site-content/footer', data),
+};
+
+// Newsletter API
+export const newsletter = {
+  subscribe: (data: any) => api.post('/newsletter/subscribe', data),
+  unsubscribe: (data: any) => api.post('/newsletter/unsubscribe', data),
+  getSubscribers: (params?: any) => api.get('/newsletter/subscribers', { params }),
+  getStats: () => api.get('/newsletter/stats'),
+  updateSubscriber: (id: string, data: any) => api.put(`/newsletter/subscriber/${id}`, data),
+  deleteSubscriber: (id: string) => api.delete(`/newsletter/subscriber/${id}`),
+};
+
+// Page Content API
+export const pages = {
+  getAll: () => api.get('/pages'),
+  getBySlug: (slug: string) => api.get(`/pages/${slug}`),
+  getAllAdmin: () => api.get('/pages/admin/all'),
+  create: (data: any) => api.post('/pages', data),
+  update: (id: string, data: any) => api.put(`/pages/${id}`, data),
+  delete: (id: string) => api.delete(`/pages/${id}`),
+  toggle: (id: string) => api.put(`/pages/${id}/toggle`),
 };
 
 export default api;
